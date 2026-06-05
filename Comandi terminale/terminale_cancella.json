@@ -1,0 +1,99 @@
+{
+  "name": "Terminale – Cancella",
+  "position": 8,
+  "skip": false,
+  "defaultBinTintColor": "",
+  "defaultTextColor": "",
+  "clips": [
+    {
+      "title": "⚠️ REGOLA SICUREZZA CANCELLAZIONI",
+      "text": "## Prima sempre TRY per vedere cosa verrà cancellato\n## Solo dopo, se la lista è corretta, usare DELETE\n## Non usare DELETE su cartelle non verificate\necho \"Prima TRY, poi DELETE\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova file .tmp da cancellare",
+      "text": "## Modalità prova: mostra cosa verrebbe cancellato\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -iname \"*.tmp\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 DELETE – cancella file .tmp",
+      "text": "## ATTENZIONE: cancella davvero i file trovati\n## Prima usare sempre la versione TRY\n## -print mostra i file mentre vengono cancellati\nfind \"/percorso/cartella\" -type f -iname \"*.tmp\" -print -delete",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova file temporanei multipli (.tmp .bak .DS_Store)",
+      "text": "## Modalità prova: trova .tmp, .bak e .DS_Store\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f \\( -iname \"*.tmp\" -o -iname \"*.bak\" -o -name \".DS_Store\" \\)",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 DELETE – cancella file temporanei multipli",
+      "text": "## ATTENZIONE: cancella davvero .tmp, .bak e .DS_Store\n## Prima usare sempre la versione TRY\n## -print mostra i file mentre vengono cancellati\nfind \"/percorso/cartella\" -type f \\( -iname \"*.tmp\" -o -iname \"*.bak\" -o -name \".DS_Store\" \\) -print -delete",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova .DS_Store",
+      "text": "## Modalità prova: mostra tutti i file .DS_Store\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -name \".DS_Store\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 DELETE – cancella .DS_Store",
+      "text": "## ATTENZIONE: cancella davvero tutti i file .DS_Store\n## Prima usare sempre la versione TRY\n## -print mostra i file mentre vengono cancellati\nfind \"/percorso/cartella\" -type f -name \".DS_Store\" -print -delete",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova file più vecchi di N giorni",
+      "text": "## Modalità prova: trova file più vecchi di 365 giorni\n## Modifica +365 se serve, sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -mtime +365",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 DELETE – cancella file più vecchi di N giorni",
+      "text": "## ATTENZIONE: cancella davvero file più vecchi di 365 giorni\n## Prima usare sempre la versione TRY\n## -print mostra i file mentre vengono cancellati\nfind \"/percorso/cartella\" -type f -mtime +365 -print -delete",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova cartelle vuote",
+      "text": "## Trova cartelle vuote sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type d -empty",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 DELETE – cancella cartelle vuote",
+      "text": "## ATTENZIONE: cancella davvero le cartelle vuote\n## Prima usare sempre la versione TRY\n## -print mostra le cartelle mentre vengono cancellate\nfind \"/percorso/cartella\" -type d -empty -print -delete",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 rm – elimina file singolo",
+      "text": "## Elimina un file singolo\n## Sostituisci /percorso/del/file\nrm \"/percorso/del/file\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "☠️ PERICOLO – rm -rf elimina cartella e contenuto",
+      "text": "## USARE SOLO SE SICURI AL 100%\n## ATTENZIONE: elimina cartella e tutto il contenuto, senza conferma\n## Prima verificare con ls cosa contiene la cartella\nrm -rf \"/percorso/cartella\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🗑 rmdir – elimina cartella vuota",
+      "text": "## Elimina una cartella solo se è vuota (sicuro: fallisce se non è vuota)\n## Sostituisci /percorso/cartella\nrmdir \"/percorso/cartella\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🚫 Escludi cartella – esempio Archivio",
+      "text": "## Cerca file .tmp escludendo cartelle chiamate Archivio\n## Sostituisci /percorso/cartella e Archivio se serve\nfind \"/percorso/cartella\" -path \"*/Archivio/*\" -prune -o -type f -iname \"*.tmp\" -print",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    }
+  ]
+}

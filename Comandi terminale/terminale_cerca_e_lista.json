@@ -1,0 +1,87 @@
+{
+  "name": "Terminale – Cerca e lista",
+  "position": 7,
+  "skip": false,
+  "defaultBinTintColor": "",
+  "defaultTextColor": "",
+  "clips": [
+    {
+      "title": "📄 Lista file – tutti i file sotto una cartella",
+      "text": "## Elenca tutti i file sotto una cartella e sottocartelle\n## Trascina la cartella dopo find oppure sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f | sort",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "📄 Lista file – salva in TXT",
+      "text": "## Elenca tutti i file e salva in TXT in Documents/download\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f | sort > \"$HOME/Documents/download/file_list.txt\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "📄 Lista file – dettaglio con dimensione e data",
+      "text": "## Elenca file con dimensione e data, salva in TXT\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -exec ls -lh {} \\; > \"$HOME/Documents/download/file_list_dettaglio.txt\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "📄 Lista file – solo Markdown .md",
+      "text": "## Trova tutti i file .md sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -name \"*.md\" | sort",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "📄 Lista file – con dettagli e file nascosti",
+      "text": "## Elenca file con permessi, dimensione, data (inclusi i nascosti)\n## Trascina la cartella oppure sostituisci /percorso/cartella\nls -la \"/percorso/cartella\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "📄 Lista ricorsiva – esclude __MACOSX e ._",
+      "text": "## Trova solo file, escludendo metadati macOS (utile dopo unzip)\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -not -path \"*/__MACOSX/*\" -not -name \"._*\" | sort",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🔎 Cerca PDF sotto una cartella",
+      "text": "## Trova tutti i PDF sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -iname \"*.pdf\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🔎 Cerca Excel sotto una cartella",
+      "text": "## Trova file Excel .xlsx e .xls sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f \\( -iname \"*.xlsx\" -o -iname \"*.xls\" \\)",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🔎 Cerca per nome file",
+      "text": "## Cerca file/cartelle che contengono una parola nel nome\n## Sostituisci PAROLA e /percorso/cartella\nfind \"/percorso/cartella\" -iname \"*PAROLA*\"",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🔢 Conta file sotto una cartella",
+      "text": "## Conta tutti i file sotto una cartella e sottocartelle\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f | wc -l",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🔢 Conta file per estensione",
+      "text": "## Conta quanti file .md (o altra estensione) ci sono sotto una cartella\n## Sostituisci .md e /percorso/cartella\nfind \"/percorso/cartella\" -type f -iname \"*.md\" | wc -l",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova file più vecchi di N giorni",
+      "text": "## Modalità prova: trova file più vecchi di 365 giorni\n## Modifica +365 se serve, sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -mtime +365",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    },
+    {
+      "title": "🧪 TRY – trova file grandi oltre 500 MB",
+      "text": "## Modalità prova: trova file più grandi di 500 MB con dettaglio\n## Sostituisci /percorso/cartella e +500M se serve\nfind \"/percorso/cartella\" -type f -size +500M -exec ls -lh {} \\;",
+      "binTintColor": "&h00CBCBCB",
+      "textColor": "&h01000000"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "name": "Terminale 1 – Cerca e lista",
+  "position": 6,
+  "skip": false,
+  "defaultBinTintColor": "",
+  "defaultTextColor": "",
+  "clips": [
+    {
+      "title": "📄 Lista file – tutti i file sotto una cartella",
+      "text": "📄 Lista file – tutti i file sotto una cartella\n## Elenca tutti i file sotto una cartella e sottocartelle\n## Trascina la cartella dopo find oppure sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f | sort",
+      "previewStyle": 1
+    },
+    {
+      "title": "📄 Lista file – salva in TXT",
+      "text": "📄 Lista file – salva in TXT\n## Elenca tutti i file e salva in TXT in Documents/download\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f | sort > \"$HOME/Documents/download/file_list.txt\"",
+      "previewStyle": 1
+    },
+    {
+      "title": "📄 Lista file – dettaglio con dimensione e data",
+      "text": "📄 Lista file – dettaglio con dimensione e data\n## Elenca file con dimensione e data, salva in TXT\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -exec ls -lh {} \\; > \"$HOME/Documents/download/file_list_dettaglio.txt\"",
+      "previewStyle": 1
+    },
+    {
+      "title": "📄 Lista file – solo Markdown .md",
+      "text": "📄 Lista file – solo Markdown .md\n## Trova tutti i file .md sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -name \"*.md\" | sort",
+      "previewStyle": 1
+    },
+    {
+      "title": "📄 Lista file – con dettagli e file nascosti",
+      "text": "📄 Lista file – con dettagli e file nascosti\n## Elenca file con permessi, dimensione, data (inclusi i nascosti)\n## Trascina la cartella oppure sostituisci /percorso/cartella\nls -la \"/percorso/cartella\"",
+      "previewStyle": 1
+    },
+    {
+      "title": "📄 Lista ricorsiva – esclude __MACOSX e ._",
+      "text": "📄 Lista ricorsiva – esclude __MACOSX e ._\n## Trova solo file, escludendo metadati macOS (utile dopo unzip)\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -not -path \"*/__MACOSX/*\" -not -name \"._*\" | sort",
+      "previewStyle": 1
+    },
+    {
+      "title": "🔎 Cerca PDF sotto una cartella",
+      "text": "🔎 Cerca PDF sotto una cartella\n## Trova tutti i PDF sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -iname \"*.pdf\"",
+      "previewStyle": 1
+    },
+    {
+      "title": "🔎 Cerca Excel sotto una cartella",
+      "text": "🔎 Cerca Excel sotto una cartella\n## Trova file Excel .xlsx e .xls sotto una cartella\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f \\( -iname \"*.xlsx\" -o -iname \"*.xls\" \\)",
+      "previewStyle": 1
+    },
+    {
+      "title": "🔎 Cerca per nome file",
+      "text": "🔎 Cerca per nome file\n## Cerca file/cartelle che contengono una parola nel nome\n## Sostituisci PAROLA e /percorso/cartella\nfind \"/percorso/cartella\" -iname \"*PAROLA*\"",
+      "previewStyle": 1
+    },
+    {
+      "title": "🔢 Conta file sotto una cartella",
+      "text": "🔢 Conta file sotto una cartella\n## Conta tutti i file sotto una cartella e sottocartelle\n## Sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f | wc -l",
+      "previewStyle": 1
+    },
+    {
+      "title": "🔢 Conta file per estensione",
+      "text": "🔢 Conta file per estensione\n## Conta quanti file .md (o altra estensione) ci sono sotto una cartella\n## Sostituisci .md e /percorso/cartella\nfind \"/percorso/cartella\" -type f -iname \"*.md\" | wc -l",
+      "previewStyle": 1
+    },
+    {
+      "title": "🧪 TRY – trova file più vecchi di N giorni",
+      "text": "🧪 TRY – trova file più vecchi di N giorni\n## Modalità prova: trova file più vecchi di 365 giorni\n## Modifica +365 se serve, sostituisci /percorso/cartella\nfind \"/percorso/cartella\" -type f -mtime +365",
+      "previewStyle": 1
+    },
+    {
+      "title": "🧪 TRY – trova file grandi oltre 500 MB",
+      "text": "🧪 TRY – trova file grandi oltre 500 MB\n## Modalità prova: trova file più grandi di 500 MB con dettaglio\n## Sostituisci /percorso/cartella e +500M se serve\nfind \"/percorso/cartella\" -type f -size +500M -exec ls -lh {} \\;",
+      "previewStyle": 1
+    }
+  ]
+}
