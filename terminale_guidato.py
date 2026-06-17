@@ -32,7 +32,7 @@ from tkinter import ttk, filedialog, messagebox
 #   ~/Library/CloudStorage/Dropbox/Documenti_IRC/Python/shared/path_widgets.py
 #
 # Caso script normale:
-#   __file__ è dentro Python/stable o Python/work, quindi si può risalire.
+#   __file__ è dentro Python o Python/work, quindi si può risalire.
 #
 # Caso app PyInstaller:
 #   __file__ è dentro il bundle .app, quindi NON si può risalire alla
@@ -89,6 +89,7 @@ CONFIG_DIR = PYTHON_ROOT / "_Config" / "TerminaleGuidato"
 CONFIG_PATH = CONFIG_DIR / "config.json"
 STATE_PATH = CONFIG_DIR / "state.json"
 LOG_DIR = HOME / "Documents" / "log"
+APP_LOG_DIR = LOG_DIR / "TerminaleGuidato"
 DOWNLOAD_DIR = HOME / "Documents" / "download"
 
 
@@ -114,7 +115,7 @@ class TerminaleGuidatoApp:
         self.root.geometry("1500x780")
         self.root.minsize(1250, 680)
 
-        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        APP_LOG_DIR.mkdir(parents=True, exist_ok=True)
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
         self.config_path = self.find_config()
@@ -887,7 +888,7 @@ class TerminaleGuidatoApp:
 
     def write_log_for_command(self, command_data: dict, cmd: str, result, elapsed: float):
         ts = time.strftime("%Y%m%d_%H%M%S")
-        log_file = LOG_DIR / f"TerminaleGuidato_{ts}.log"
+        log_file = APP_LOG_DIR / f"{ts}.log"
         content = [
             f"Terminale Guidato {APP_VERSION}",
             f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}",
@@ -964,26 +965,65 @@ class TerminaleGuidatoApp:
         if not self.current_command:
             return
 
-        man_cmd = self.current_command.get("man")
-        if not man_cmd:
+        man_value = self.current_command.get("man")
+        if not man_value:
             tmpl = self.current_command.get("template", "").strip()
-            man_cmd = tmpl.split(" ", 1)[0] if tmpl else ""
+            man_value = tmpl.split(" ", 1)[0] if tmpl else ""
 
-        if not man_cmd:
+        if not man_value:
             messagebox.showinfo("Manuale tecnico", "Nessun comando tecnico associato.")
             return
 
-        cmd = f"man {shlex.quote(man_cmd)} | col -b"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        # Se man_value è un path a file .md → mostra il contenuto del file
+        # Supporta path con ~ e con $HOME (variabile shell)
+        man_path = Path(man_value.replace("$HOME", str(Path.home()))).expanduser()
+        if man_path.suffix.lower() == ".md" or man_path.is_file():
+            if man_path.exists():
+                try:
+                    contenuto = man_path.read_text(encoding="utf-8")
+                except Exception as e:
+                    contenuto = f"Errore lettura file: {e}"
+                titolo = man_path.name
+            else:
+                contenuto = f"File non trovato: {man_path}"
+                titolo = man_value
+        else:
+            # Comando Unix standard → chiama man
+            cmd = f"man {shlex.quote(man_value)} | col -b"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            contenuto = result.stdout or result.stderr or f"Nessun manuale trovato per {man_value}"
+            titolo = man_value
 
         win = tk.Toplevel(self.root)
-        win.title(f"Manuale tecnico — {man_cmd}")
+        win.title(f"Manuale tecnico — {titolo}")
         win.geometry("900x700")
+        win.transient(self.root)
 
-        text = tk.Text(win, wrap="none", font=("Menlo", 11), padx=10, pady=10)
+        # Scrollbar orizzontale + verticale
+        frame = tk.Frame(win)
+        frame.pack(fill="both", expand=True)
+
+        sb_y = tk.Scrollbar(frame, orient="vertical")
+        sb_x = tk.Scrollbar(frame, orient="horizontal")
+        text = tk.Text(
+            frame,
+            wrap="none",
+            font=("Menlo", 11),
+            padx=10, pady=10,
+            yscrollcommand=sb_y.set,
+            xscrollcommand=sb_x.set,
+        )
+        sb_y.config(command=text.yview)
+        sb_x.config(command=text.xview)
+
+        sb_y.pack(side="right", fill="y")
+        sb_x.pack(side="bottom", fill="x")
         text.pack(fill="both", expand=True)
-        text.insert("end", result.stdout or result.stderr or f"Nessun manuale trovato per {man_cmd}")
+
+        text.insert("end", contenuto)
         text.configure(state="disabled")
+
+        ttk.Button(win, text="Chiudi", command=win.destroy).pack(pady=8)
 
 
     def safe_exit(self):

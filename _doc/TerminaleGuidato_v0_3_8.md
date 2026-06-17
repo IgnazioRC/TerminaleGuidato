@@ -1,4 +1,4 @@
-# Terminale Guidato — v0.3.7 (Stable)
+# Terminale Guidato — v0.3.8 (Stable)
 
 <!-- ChatGPT -->
 
@@ -119,7 +119,10 @@ Significato:
 
 Salvati in:
 
-~/Documents/log
+~/Documents/log/TerminaleGuidato/
+
+Convenzione IRC standard: una sottocartella dedicata per app,
+nome file `<timestamp>.log` (es. `20260617_143000.log`).
 
 Contengono:
 
