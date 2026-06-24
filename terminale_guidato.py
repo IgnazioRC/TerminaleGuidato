@@ -148,7 +148,8 @@ class TerminaleGuidatoApp:
         self.current_process = None
         self.current_process_label = None
         self.process_stop_requested = False
-        self.last_dir = self.state.get("last_dir", str(DOC_IRC))
+        self.last_dir    = self.state.get("last_dir",    str(DOC_IRC))
+        self.last_scelta = self.state.get("last_scelta", {})
 
         self.build_ui()
         self.populate_categories()
@@ -178,8 +179,12 @@ class TerminaleGuidatoApp:
     def save_state(self):
         try:
             CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+            state = {
+                "last_dir":    self.last_dir,
+                "last_scelta": self.last_scelta,
+            }
             STATE_PATH.write_text(
-                json.dumps({"last_dir": self.last_dir}, ensure_ascii=False, indent=2),
+                json.dumps(state, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
         except Exception:
@@ -461,11 +466,23 @@ class TerminaleGuidatoApp:
 
         elif tipo == "scelta":
             opzioni = param.get("opzioni", [])
-            var = tk.StringVar(value=str(default) if default in opzioni else (opzioni[0] if opzioni else ""))
+            # Usa l'ultimo valore selezionato per questo parametro, se disponibile
+            remembered = self.last_scelta.get(name)
+            if remembered and remembered in opzioni:
+                initial = remembered
+            elif default in opzioni:
+                initial = default
+            else:
+                initial = opzioni[0] if opzioni else ""
+            var = tk.StringVar(value=initial)
             self.param_vars[name] = var
             combo = ttk.Combobox(row, textvariable=var, values=opzioni, state="readonly", width=60)
             combo.pack(side="left", fill="x", expand=True)
-            combo.bind("<<ComboboxSelected>>", lambda e: self.update_preview())
+            def on_scelta(e, n=name, v=var):
+                self.last_scelta[n] = v.get()
+                self.save_state()
+                self.update_preview()
+            combo.bind("<<ComboboxSelected>>", on_scelta)
 
         elif tipo == "testo_lungo":
             # Usa tk.Text multiriga con scrollbar; esposto come TextVar
