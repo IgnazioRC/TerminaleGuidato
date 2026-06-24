@@ -77,7 +77,7 @@ except Exception as exc:
     ) from exc
 
 
-APP_NAME = "Terminale Guidato"
+APP_NAME = "TerminaleGuidato"
 APP_VERSION = "0.3.9"
 VERSION = "0.3.9"
 
@@ -106,6 +106,26 @@ def shell_quote(value: str) -> str:
 def load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+class TextVar:
+    """
+    Wrapper attorno a tk.Text che espone la stessa interfaccia di StringVar
+    (.get() / .set()) così che update_preview e build_command funzionino
+    senza modifiche.
+    """
+    def __init__(self, widget: "tk.Text", default: str = ""):
+        self._widget = widget
+        if default:
+            self._widget.insert("1.0", default)
+
+    def get(self) -> str:
+        # tk.Text aggiunge sempre un \n finale — lo togliamo
+        return self._widget.get("1.0", "end-1c")
+
+    def set(self, value: str) -> None:
+        self._widget.delete("1.0", "end")
+        self._widget.insert("1.0", value)
 
 
 class TerminaleGuidatoApp:
@@ -447,6 +467,21 @@ class TerminaleGuidatoApp:
             combo.pack(side="left", fill="x", expand=True)
             combo.bind("<<ComboboxSelected>>", lambda e: self.update_preview())
 
+        elif tipo == "testo_lungo":
+            # Usa tk.Text multiriga con scrollbar; esposto come TextVar
+            frame = tk.Frame(row)
+            frame.pack(side="left", fill="x", expand=True)
+            scrollbar = ttk.Scrollbar(frame, orient="vertical")
+            txt = tk.Text(frame, height=6, wrap="word",
+                          yscrollcommand=scrollbar.set, font=("Menlo", 11))
+            scrollbar.config(command=txt.yview)
+            scrollbar.pack(side="right", fill="y")
+            txt.pack(side="left", fill="both", expand=True)
+            var = TextVar(txt, default=str(param.get("default", "")))
+            self.param_vars[name] = var
+            txt.bind("<KeyRelease>", lambda e: self.update_preview())
+            txt.focus_set()
+
         else:
             var = tk.StringVar(value=str(param.get("default", "")))
             self.param_vars[name] = var
@@ -581,9 +616,17 @@ class TerminaleGuidatoApp:
 
     def values_for_template(self) -> dict[str, str]:
         values = {}
+        params = {p["nome"]: p for p in self.current_command.get("parametri", [])} if self.current_command else {}
         for name, var in self.param_vars.items():
             raw_value = var.get()
-            values[name] = shell_quote(raw_value)
+            tipo = params.get(name, {}).get("tipo", "testo")
+            if tipo == "testo_lungo":
+                # Il messaggio multiriga va escapato sostituendo ' con '"'"'
+                # così può stare dentro apici singoli nel template SSH
+                escaped = raw_value.replace("'", "'\"'\"'")
+                values[name] = escaped
+            else:
+                values[name] = shell_quote(raw_value)
         return values
 
     def build_command(self, mode: str | None = None) -> str:
