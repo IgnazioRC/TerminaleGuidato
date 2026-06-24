@@ -78,8 +78,8 @@ except Exception as exc:
 
 
 APP_NAME = "Terminale Guidato"
-APP_VERSION = "0.3.8"
-VERSION = "0.3.8"
+APP_VERSION = "0.3.9"
+VERSION = "0.3.9"
 
 HOME = Path.home()
 DROPBOX = HOME / "Library" / "CloudStorage" / "Dropbox"
@@ -438,6 +438,14 @@ class TerminaleGuidatoApp:
             var = tk.BooleanVar(value=bool(param.get("default", False)))
             self.param_vars[name] = var
             ttk.Checkbutton(row, variable=var, command=self.update_preview).pack(side="left")
+
+        elif tipo == "scelta":
+            opzioni = param.get("opzioni", [])
+            var = tk.StringVar(value=str(default) if default in opzioni else (opzioni[0] if opzioni else ""))
+            self.param_vars[name] = var
+            combo = ttk.Combobox(row, textvariable=var, values=opzioni, state="readonly", width=60)
+            combo.pack(side="left", fill="x", expand=True)
+            combo.bind("<<ComboboxSelected>>", lambda e: self.update_preview())
 
         else:
             var = tk.StringVar(value=str(param.get("default", "")))
