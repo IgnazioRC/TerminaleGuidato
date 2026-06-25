@@ -150,6 +150,8 @@ class TerminaleGuidatoApp:
         self.process_stop_requested = False
         self.last_dir    = self.state.get("last_dir",    str(DOC_IRC))
         self.last_scelta = self.state.get("last_scelta", {})
+        # {nome_host: ip} popolato dopo esecuzione di tailscale_status
+        self.tailscale_peers: dict[str, str] = {}
 
         self.build_ui()
         self.populate_categories()
@@ -466,7 +468,6 @@ class TerminaleGuidatoApp:
 
         elif tipo == "scelta":
             opzioni = param.get("opzioni", [])
-            # Usa l'ultimo valore selezionato per questo parametro, se disponibile
             remembered = self.last_scelta.get(name)
             if remembered and remembered in opzioni:
                 initial = remembered
@@ -483,6 +484,27 @@ class TerminaleGuidatoApp:
                 self.save_state()
                 self.update_preview()
             combo.bind("<<ComboboxSelected>>", on_scelta)
+
+        elif tipo == "scelta_dinamica":
+            sorgente = param.get("sorgente", "")
+            if sorgente == "tailscale_peers" and self.tailscale_peers:
+                # Costruisce le opzioni come "nome (ip)"
+                opzioni = [f"{nome} ({ip})" for nome, ip in sorted(self.tailscale_peers.items())]
+                var = tk.StringVar(value=opzioni[0] if opzioni else "")
+                self.param_vars[name] = var
+                combo = ttk.Combobox(row, textvariable=var, values=opzioni,
+                                     state="readonly", width=40)
+                combo.pack(side="left", fill="x", expand=True)
+                combo.bind("<<ComboboxSelected>>", lambda e: self.update_preview())
+            else:
+                # Fallback: testo libero se i peer non sono ancora disponibili
+                var = tk.StringVar(value=str(default))
+                self.param_vars[name] = var
+                ent = ttk.Entry(row, textvariable=var, width=20)
+                ent.pack(side="left")
+                ent.bind("<KeyRelease>", lambda e: self.update_preview())
+                tk.Label(row, text="⚠ Esegui prima Stato Tailscale",
+                         foreground="orange", font=("Helvetica Neue", 11)).pack(side="left", padx=(8, 0))
 
         elif tipo == "testo_lungo":
             # Usa tk.Text multiriga con scrollbar; esposto come TextVar
@@ -638,10 +660,14 @@ class TerminaleGuidatoApp:
             raw_value = var.get()
             tipo = params.get(name, {}).get("tipo", "testo")
             if tipo == "testo_lungo":
-                # Il messaggio multiriga va escapato sostituendo ' con '"'"'
-                # così può stare dentro apici singoli nel template SSH
                 escaped = raw_value.replace("'", "'\"'\"'")
                 values[name] = escaped
+            elif tipo == "scelta_dinamica":
+                # Il valore è "nome (ip)" → estrai solo l'IP per il template
+                import re
+                m = re.search(r'\((\d+\.\d+\.\d+\.\d+)\)', raw_value)
+                ip = m.group(1) if m else raw_value
+                values[name] = shell_quote(ip)
             else:
                 values[name] = shell_quote(raw_value)
         return values
@@ -933,6 +959,61 @@ class TerminaleGuidatoApp:
         self.process_stop_requested = False
         self.update_action_buttons()
         self.output.see("end")
+
+        # Tailscale: parsing DOPO aver azzerato current_process
+        # così update_action_buttons dentro _reload_current_command trova process = None
+        if result.returncode == 0 and not stopped:
+            cmd_id = self.current_command.get("id", "") if self.current_command else ""
+            if cmd_id == "tailscale_status" and result.stdout:
+                self._parse_tailscale_output(result.stdout)
+
+    def _parse_tailscale_output(self, stdout: str) -> None:
+        """
+        Parsa l'output testuale di 'tailscale status' e popola self.tailscale_peers.
+        Formato riga: IP  nome  utente  OS  stato...
+        Tiene solo i peer macOS — esclude iOS (iPad/iPhone non rispondono a SSH/ping).
+        """
+        import re
+        peers = {}
+        for line in stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split()
+            if len(parts) >= 4:
+                ip   = parts[0]
+                nome = parts[1]
+                os   = parts[3]
+                if re.match(r'^\d+\.\d+\.\d+\.\d+$', ip) and os == "macOS":
+                    peers[nome] = ip
+        if peers:
+            self.tailscale_peers = peers
+            self.output.insert("end",
+                f"\n[Tailscale: {len(peers)} Mac trovati — parametri IP aggiornati]\n",
+                "status")
+            # Ridisegna i parametri del comando corrente con i Combobox popolati
+            self._reload_current_command()
+
+    def _reload_current_command(self) -> None:
+        """
+        Ridisegna solo la sezione parametri del comando corrente,
+        senza toccare output, bottoni o stato.
+        Usato dopo _parse_tailscale_output per aggiornare i Combobox IP.
+        """
+        if not self.current_command:
+            return
+        # Svuota e ridisegna solo i parametri
+        for child in self.params_container.winfo_children():
+            child.destroy()
+        self.param_vars.clear()
+        params = self.current_command.get("parametri", [])
+        if not params:
+            ttk.Label(self.params_container, text="Nessun parametro.").pack(anchor="w")
+        else:
+            for row_idx, p in enumerate(params):
+                self.add_param_widget(self.params_container, p, row_idx)
+        self.update_preview()
+        self.update_action_buttons()
 
     def stop_current_process(self):
         if self.current_process is None:

@@ -39,7 +39,7 @@ Terminale guidato/
 ├── terminale_guidato.py        ← applicativo principale
 ├── _Config/TerminaleGuidato/
 │   ├── config.json             ← indice dei file comandi
-│   ├── state.json              ← stato persistente (ultima cartella usata)
+│   ├── state.json              ← stato persistente (ultima cartella, ultimi Combobox)
 │   └── Commands/
 │       ├── 01_cerca_e_lista.json
 │       ├── 02_cartelle_e_navigazione.json
@@ -109,11 +109,13 @@ Per aggiungere una nuova categoria: creare il file JSON in `Commands/` e aggiung
 
 | Tipo | Widget | Uso |
 |------|--------|-----|
-| `testo` | Campo di testo libero | Stringhe, pattern, messaggi |
+| `testo` | Campo di testo libero | Stringhe brevi, pattern, nomi file |
+| `testo_lungo` | Area di testo multiriga con scrollbar | Messaggi commit, testi lunghi |
 | `path_cartella` | Campo + pulsante Sfoglia | Percorsi cartella |
 | `path_file` | Campo + pulsante Scegli | Percorsi file |
 | `booleano` | Checkbox | Flag on/off |
-| `scelta` | Menu a tendina (Combobox) | Lista di opzioni predefinite |
+| `scelta` | Menu a tendina (Combobox) | Lista di opzioni predefinite nel JSON |
+| `scelta_dinamica` | Menu a tendina popolato a runtime | Valori noti solo a runtime (es. IP Tailscale) |
 
 ### Esempio parametro `scelta`
 
@@ -131,6 +133,20 @@ Per aggiungere una nuova categoria: creare il file JSON in `Commands/` e aggiung
   ]
 }
 ```
+
+### Esempio parametro `scelta_dinamica`
+
+```json
+{
+  "nome": "ip_remoto",
+  "label": "IP Tailscale del Mac remoto",
+  "tipo": "scelta_dinamica",
+  "sorgente": "tailscale_peers",
+  "obbligatorio": true
+}
+```
+
+Prima che la sorgente sia disponibile, il campo mostra un testo libero con avviso arancione. Dopo l'esecuzione del comando di inizializzazione, il Combobox si popola automaticamente.
 
 ---
 
@@ -216,6 +232,32 @@ I file sono su Dropbox, quindi fisicamente identici su tutti i Mac. Il repo Git 
 - Il parametro **File** accetta `.` per aggiungere tutto il modificato, o nomi specifici separati da spazio
 - Il messaggio commit non può contenere apici singoli `'`
 - Per sessioni che toccano più repo: ripetere il comando Commit + Push una volta per repo
+
+---
+
+## Categoria Rete e Mac remoti (08_rete_e_remoto.json)
+
+Categoria per operazioni di rete e accesso remoto via Tailscale. Usa il tipo `scelta_dinamica` per i parametri IP — il Combobox si popola automaticamente dopo aver eseguito **Stato Tailscale**.
+
+### Flusso obbligatorio
+
+1. **Stato Tailscale** → rileva i Mac online e popola i Combobox IP di tutti gli altri comandi
+2. Selezionare il Mac dal Combobox ed eseguire il comando desiderato
+
+### Comandi disponibili
+
+| Comando | Descrizione | Rischio |
+|---------|-------------|---------|
+| **Stato Tailscale** | Lista Mac connessi con IP e stato | basso |
+| **Connetti via SSH** | Apre sessione SSH sul Mac selezionato | medio |
+| **Copia file config** | Copia un file locale su Mac remoto via SCP | medio-basso |
+| **Ping Mac remoto** | Verifica raggiungibilità | basso |
+
+### Note operative
+
+- Solo i Mac con sistema operativo macOS appaiono nel Combobox — iPad e iPhone vengono esclusi automaticamente perché iOS blocca SSH e ping
+- Il MacBook Pro locale appare nella lista ma connettersi a se stessi via SSH è inutile
+- Se Tailscale non è attivo o il comando fallisce, i parametri IP restano come campo testo libero con avviso arancione
 
 ---
 
