@@ -103,6 +103,40 @@ def shell_quote(value: str) -> str:
     return shlex.quote(expand_path(value))
 
 
+# Directory dei tool installati via Homebrew, in ordine di priorità.
+# Un'app GUI macOS (bundle .app) eredita un PATH di sistema minimale che
+# NON include queste cartelle: senza aggiungerle, tutti i comandi che
+# richiamano tool Homebrew (es. tailscale, ideviceinstaller) fallirebbero
+# con falsi "non installato" pur essendo presenti e funzionanti da Terminale.
+HOMEBREW_BIN_DIRS = [
+    "/opt/homebrew/bin",   # Homebrew su Apple Silicon
+    "/opt/homebrew/sbin",
+    "/usr/local/bin",      # Homebrew su Intel / tool legacy
+    "/usr/local/sbin",
+]
+
+
+def _build_env() -> dict:
+    """
+    Ambiente esplicito da passare (env=) a OGNI subprocess dell'app.
+
+    Estende il PATH ereditato dal processo mettendo PRIMA le directory dei
+    tool Homebrew (priorità) e conservando tutto il PATH esistente dopo, senza
+    duplicati. Centralizzato qui così la correzione vale per ogni comando,
+    presente e futuro, senza intervenire nei singoli JSON.
+    """
+    env = os.environ.copy()
+    parts: list[str] = []
+    for d in HOMEBREW_BIN_DIRS:
+        if d not in parts:
+            parts.append(d)
+    for d in env.get("PATH", "").split(os.pathsep):
+        if d and d not in parts:
+            parts.append(d)
+    env["PATH"] = os.pathsep.join(parts)
+    return env
+
+
 def load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
@@ -821,6 +855,7 @@ class TerminaleGuidatoApp:
                         cwd=str(DOC_IRC),
                         capture_output=True,
                         text=True,
+                        env=_build_env(),
                     )
                     raw_count = (count_result.stdout or "").strip()
                     if raw_count.isdigit():
@@ -839,6 +874,7 @@ class TerminaleGuidatoApp:
                 text=True,
                 bufsize=1,
                 start_new_session=True,
+                env=_build_env(),
             )
             self.current_process = proc
             self.root.after(0, self.update_action_buttons)
@@ -1139,7 +1175,7 @@ class TerminaleGuidatoApp:
         else:
             # Comando Unix standard → chiama man
             cmd = f"man {shlex.quote(man_value)} | col -b"
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, env=_build_env())
             contenuto = result.stdout or result.stderr or f"Nessun manuale trovato per {man_value}"
             titolo = man_value
 
